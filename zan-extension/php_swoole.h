@@ -412,6 +412,7 @@ void php_swoole_event_wait();
 
 void php_swoole_register_callback(swServer *serv);
 void php_swoole_client_free(zval *object, swClient *cli TSRMLS_DC);
+void client_check_setting(swClient *cli, zval *zset TSRMLS_DC);
 swClient* php_swoole_client_new(zval *object, char *host, int host_len, int port,swClient** cli);
 zval* php_swoole_websocket_unpack(swString *data TSRMLS_DC);
 

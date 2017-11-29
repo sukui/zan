@@ -137,7 +137,7 @@ ZEND_END_ARG_INFO()
 static void client_free_callback(zval *object);
 static int client_select_add(zval *sock_array, fd_set *fds, int *max_fd TSRMLS_DC);
 static int client_select_wait(zval *sock_array, fd_set *fds TSRMLS_DC);
-//static void client_check_setting(swClient *cli, zval *zset TSRMLS_DC);
+//void client_check_setting(swClient *cli, zval *zset TSRMLS_DC);
 
 static const zend_function_entry swoole_client_methods[] =
 {
