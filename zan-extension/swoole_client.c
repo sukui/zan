@@ -22,6 +22,7 @@
 #include "php_swoole.h"
 #include "swWork.h"
 #include "swBaseOperator.h"
+#include "swProtocol/socks5.h"
 
 #include "ext/standard/basic_functions.h"
 
@@ -136,7 +137,7 @@ ZEND_END_ARG_INFO()
 static void client_free_callback(zval *object);
 static int client_select_add(zval *sock_array, fd_set *fds, int *max_fd TSRMLS_DC);
 static int client_select_wait(zval *sock_array, fd_set *fds TSRMLS_DC);
-static void client_check_setting(swClient *cli, zval *zset TSRMLS_DC);
+//static void client_check_setting(swClient *cli, zval *zset TSRMLS_DC);
 
 static const zend_function_entry swoole_client_methods[] =
 {
@@ -588,7 +589,7 @@ static int client_select_add(zval *sock_array, fd_set *fds, int *max_fd TSRMLS_D
     return num ? 1 : 0;
 }
 
-static void client_check_setting(swClient *cli, zval *zset TSRMLS_DC)
+void client_check_setting(swClient *cli, zval *zset TSRMLS_DC)
 {
     zval *valuePtr = NULL;
     int value = 1;
@@ -720,6 +721,42 @@ static void client_check_setting(swClient *cli, zval *zset TSRMLS_DC)
             swSysError("setsockopt(%d, TCP_NODELAY) failed.", cli->socket->fd);
         }
     }
+
+    /**
+     * socks5 proxy
+     */
+    if (sw_zend_hash_find(vht, ZEND_STRS("socks5_host"), (void **) &valuePtr) == SUCCESS)
+    {
+        sw_convert_to_string(valuePtr);
+        cli->socks5_proxy = emalloc(sizeof(swSocks5));
+        bzero(cli->socks5_proxy, sizeof(swSocks5));
+        cli->socks5_proxy->host = Z_STRVAL_P(valuePtr);
+        cli->socks5_proxy->dns_tunnel = 1;
+        if (sw_zend_hash_find(vht, ZEND_STRS("socks5_port"), (void **) &valuePtr) == SUCCESS)
+        {
+            convert_to_long(valuePtr);
+            cli->socks5_proxy->port =(int) Z_LVAL_P(valuePtr);
+        }
+        else
+        {
+            swoole_php_fatal_error(E_ERROR, "socks5 proxy require server port option.");
+            return;
+        }
+        if (sw_zend_hash_find(vht, ZEND_STRS("socks5_username"), (void **) &valuePtr) == SUCCESS)
+        {
+            sw_convert_to_string(valuePtr);
+            cli->socks5_proxy->username = Z_STRVAL_P(valuePtr);
+            cli->socks5_proxy->l_username = Z_STRLEN_P(valuePtr);
+            cli->socks5_proxy->method = 0x02;
+        }
+        if (sw_zend_hash_find(vht, ZEND_STRS("socks5_password"), (void **) &valuePtr) == SUCCESS)
+        {
+            sw_convert_to_string(valuePtr);
+            cli->socks5_proxy->password = Z_STRVAL_P(valuePtr);
+            cli->socks5_proxy->l_password = Z_STRLEN_P(valuePtr);
+        }
+    }
+
 #ifdef SW_USE_OPENSSL
     if (sw_zend_hash_find(vht, ZEND_STRS("ssl_method"), (void **) &valuePtr) == SUCCESS)
     {
@@ -902,6 +939,12 @@ void php_swoole_client_free(zval *object, swClient *cli TSRMLS_DC)
 
     if (cli)
     {
+        //socks5 proxy config
+        if (cli->socks5_proxy)
+        {
+            swoole_efree(cli->socks5_proxy);
+        }
+
         swoole_efree(cli->server_str);
         swClient_free(cli);
         swoole_efree(cli);

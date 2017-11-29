@@ -350,6 +350,7 @@ dnl        src/os/gcc_aio.c \
         src/protocol/Sha1.c \
         src/protocol/SSL.c \
 		src/protocol/WebSocket.c \
+        src/protocol/Socks5.c \
         src/util/Baseoperator.c \
         src/util/BinaryData.c \
         src/util/DNS.c \

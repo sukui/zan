@@ -56,6 +56,7 @@ typedef struct _swClient
     uint8_t open_eof_check;
 
     swProtocol protocol;
+    struct _swSocks5 *socks5_proxy;
 
     char *server_str;			/// connect id
     void *ptr;
