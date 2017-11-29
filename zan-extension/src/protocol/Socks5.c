@@ -50,8 +50,6 @@ int swSocks5_connect(swClient *cli, char *recv_data, int length)
 {
     swSocks5 *ctx = cli->socks5_proxy;
     char *buf = ctx->buf;
-    uchar version = recv_data[0];
-    uchar method = recv_data[1];
     if (ctx->state == SW_SOCKS5_STATE_HANDSHAKE)
     {
         uchar version = recv_data[0];
