@@ -61,7 +61,7 @@ int swSocks5_connect(swClient *cli, char *recv_data, int length)
         }
         if (method != ctx->method)
         {
-            swError("SOCKS authentication method not supported.");
+            swError("SOCKS authentication method not supported. server:%d client:%d",method,ctx->method);
             return SW_ERR;
         }
         //authenticate request

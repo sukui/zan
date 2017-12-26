@@ -1246,7 +1246,10 @@ static http_client* http_client_create(zval *object TSRMLS_DC)
     	swoole_php_sys_error(E_WARNING, "http create client[%s:%d] failed.", http->host, (int )http->port);
         return NULL;
     }
-    client_check_setting(cli,zset TSRMLS_CC);
+    if (zset && !ZVAL_IS_NULL(zset))
+    {
+        client_check_setting(cli,zset TSRMLS_CC);
+    }
     http->cli = cli;
     http->state = HTTP_CLIENT_STATE_READY;
     
